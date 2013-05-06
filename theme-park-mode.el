@@ -1,13 +1,12 @@
 ;;; theme-park-mode.el --- So much to see!
-;;
+
 ;; Copyright (C) 2013 Rikard Glans
-;;
+
 ;; Author: Rikard Glans <rikard@ecx.se>
 ;; Version: 0.1.0
 ;; Keywords: colorthemes, themes
-;;
-;; Time-stamp: <2013-05-07 00:12:58>
-;;
+;; Created: 6th May 2013
+
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
 ;; the Free Software Foundation, either version 3 of the License, or
@@ -42,7 +41,6 @@
     (define-key map (kbd "C-c C-p") 'tpm--prev-theme)
     (define-key map (kbd "C-c C-r") 'tpm--start-over)
     (define-key map (kbd "C-c C-q") 'tpm--quit)
-    ;; (define-key map (kbd "C-c C-s") 'tpm--save)
 
     (define-key map (kbd "<right>") 'tpm--next-theme)
     (define-key map (kbd "<left>")  'tpm--prev-theme)
@@ -51,7 +49,7 @@
     map)
   "Keyboard commands for Theme Park mode.")
 
-(defvar tpm_ok 1)
+(defvar tpm_ok 0)
 
 ;; Internal functions
 (defun tpm--initialize ()
@@ -64,17 +62,25 @@
   "Load theme."
   (tpm--reset-theme)
   (when (not (eq thm nil))
-      ;; (load-theme thm t) ; This is unsafe if you have unvetted themes installed.
-      (load-theme thm)
-      (message "Theme: %s" thm)))
+    ;; (load-theme thm t) ; This is unsafe if you have unvetted themes installed.
+    (load-theme thm)
+    (message "Theme: %s" thm)))
 
 (defun tpm--next-theme ()
   "Next theme."
   (interactive)
+
   (when (eq tpm_ok 1)
     (setq tpm_prev (car custom-enabled-themes))
     (setq tpm_next (car tpm_rest))
-    (setq tpm_rest (cdr tpm_rest)))
+    (setq tpm_rest (cdr tpm_rest))
+
+    (if (eq tpm_next nil)
+        (tpm--initialize))
+    (if (and (not (eq tpm_next nil))
+             (eq tpm_rest nil))
+        (setq tpm_rest (custom-available-themes)))
+    )
 
   (tpm--load-theme tpm_next)
 
@@ -92,11 +98,10 @@
 (defun tpm--reset-theme ()
   "Disable all loaded themes, effectively resetting to default colors."
   (interactive)
-  (progn
-    (mapc 'disable-theme custom-enabled-themes)
-    (unless (eq custom-enabled-themes nil) ; FIXME: Handle properly
-      (theme-park-mode -1)
-      (error "ABANDON SHIP!"))))
+  (mapc 'disable-theme custom-enabled-themes)
+  (unless (eq custom-enabled-themes nil) ; FIXME: Handle properly
+    (theme-park-mode -1)
+    (error "ABANDON SHIP!")))
 
 (defun tpm--reset ()
   "Reset."
@@ -109,22 +114,19 @@
   (theme-park-mode -1)
   (message "Theme Park: Bye bye!"))
 
-(defun tpm--save ()
-  "Does nothing at the moment."
-  (interactive)
-  nil)
-
 (defun tpm--start-over ()
   "Start over."
   (interactive)
   (tpm--reset)
   (message "Theme Park: Starting over."))
 
+;;;###autoload
 (define-minor-mode theme-park-mode
   "Theme park mode."
   :lighter " TP"
   :keymap tpm-mode-map
-  (tpm--initialize))
+  (if theme-park-mode
+      (tpm--initialize)))
 
 (provide 'theme-park-mode)
 

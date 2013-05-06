@@ -7,6 +7,9 @@ With this minor mode enabled you can cycle through your installed themes. I
 made it into a minor mode so that you're not limited to any particular buffer
 or other constraints when you want to view themes.
 
+Designed to be deactivated (C-c C-q / down arrow) once you're done deciding on
+a theme.
+
 ## Installation
 
 Drop `theme-park-mode.el` in your Emacs `load-path` and `(require 'theme-park-mode)`.
@@ -20,12 +23,14 @@ Drop `theme-park-mode.el` in your Emacs `load-path` and `(require 'theme-park-mo
     C-c C-r / up arrow    = start over
     C-c C-q / down arrow  = quit
 
-## TODO
+## TODOs / Maybes / Perhapses
 
 * At the moment previous theme is just that, the previous theme. Does not go backwards.
 * Clearly visible text of current theme, like an overlay box or something.
 * Keybinds are in testing stage, I might change them later (particularly the arrow keys.)
 * Marmalade/MELPA?
+* Setting for group of regularly used themes to cycle between?
+* Redesign for always-enabled (basically just find better, less used keybinds.)
 
 ## Notes
 
