@@ -1,12 +1,11 @@
-;;; theme-park-mode.el --- somethingcleverhere
-;; Version: 20130506.001
+;;; theme-park-mode.el --- So much to see!
 ;;
 ;; Copyright (C) 2013 Rikard Glans
 ;;
 ;; Author: Rikard Glans <rikard@ecx.se>
 ;; Keywords: colortheme, theme
 ;;
-;; Time-stamp: <2013-05-06 21:51:10>
+;; Time-stamp: <2013-05-06 23:48:28>
 ;;
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -46,23 +45,20 @@
 
 (defvar tpm-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map "\C-c\C-n" 'tpm--next-theme)
-    (define-key map "\C-c\C-p" 'tpm--prev-theme)
-    (define-key map "\C-c\C-q" 'tpm--quit)
-    (define-key map "\C-c\C-r" 'tpm--start-over)
-    (define-key map "\C-c\C-s" 'tpm--save)
+    (define-key map (kbd "C-c C-n") 'tpm--next-theme)
+    (define-key map (kbd "C-c C-p") 'tpm--prev-theme)
+    (define-key map (kbd "C-c C-r") 'tpm--start-over)
+    (define-key map (kbd "C-c C-q") 'tpm--quit)
+    ;; (define-key map (kbd "C-c C-s") 'tpm--save)
+
+    (define-key map (kbd "<right>") 'tpm--next-theme)
+    (define-key map (kbd "<left>")  'tpm--prev-theme)
+    (define-key map (kbd "<up>")    'tpm--start-over)
+    (define-key map (kbd "<down>")  'tpm--quit)
     map)
   "Keyboard commands for Theme Park mode.")
 
-;; (defvar tpm-mode-map
-;;   (let ((map (make-sparse-keymap)))
-;;     (define-key map (kbd "C-c C-n") 'tpm--next-theme)
-;;     (define-key map (kbd "C-c C-p") 'tpm--prev-theme)
-;;     (define-key map (kbd "C-c C-q") 'tpm--quit)
-;;     (define-key map (kbd "C-c C-r") 'tpm--start-over)
-;;     (define-key map (kbd "C-c C-s") 'tpm--save)
-;;     map)
-;;   "Keyboard commands for Theme Park mode.")
+(defvar tpm_ok 1)
 
 ;; Internal functions
 (defun tpm--initialize ()
@@ -74,35 +70,31 @@
 (defun tpm--load-theme (thm)
   "Load theme."
   (tpm--reset-theme)
-  (if (not (eq thm nil))
-      (load-theme thm t) ; This is unsafe if you have unvetted themes installed.
-    (message "Theme: %s" thm)))
+  (when (not (eq thm nil))
+      ;; (load-theme thm t) ; This is unsafe if you have unvetted themes installed.
+      (load-theme thm)
+      (message "Theme: %s" thm)))
 
-;; Public functions
 (defun tpm--next-theme ()
   "Next theme."
   (interactive)
-  ;; (if (or (eq tpm_next nil)
-  ;;         (eq tpm_rest nil)
-  ;;         (eq tpm_prev nil))
-  ;;     (tpm--initialize))
+  (when (eq tpm_ok 1)
+    (setq tpm_prev (car custom-enabled-themes))
+    (setq tpm_next (car tpm_rest))
+    (setq tpm_rest (cdr tpm_rest)))
 
-  (setq tpm_prev (car custom-enabled-themes))
   (tpm--load-theme tpm_next)
-  (setq tpm_next (car tpm_rest))
-  (setq tpm_rest (cdr tpm_rest)))
+
+  (setq tpm_ok 1))
 
 (defun tpm--prev-theme ()
   "Previous theme."
   (interactive)
-  ;; (if (or (eq tpm_next nil)
-  ;;         (eq tpm_rest nil)
-  ;;         (eq tpm_prev nil))
-  ;;     (tpm-initialize))
-
   (if (eq tpm_prev nil)
-      (tpm--reset-theme)
-    (tpm--load-theme tpm_prev)))
+      (tpm--reset)
+    (progn
+      (setq tpm_ok 0)
+      (tpm--load-theme tpm_prev))))
 
 (defun tpm--reset-theme ()
   "Disable all loaded themes, effectively resetting to default colors."
@@ -114,7 +106,7 @@
       (error "ABANDON SHIP!"))))
 
 (defun tpm--reset ()
-  "Start over."
+  "Reset."
   (tpm--reset-theme)
   (tpm--initialize))
 
@@ -130,7 +122,7 @@
   nil)
 
 (defun tpm--start-over ()
-  "Does nothing at the moment."
+  "Start over."
   (interactive)
   (tpm--reset)
   (message "Theme Park: Starting over."))
