@@ -3,9 +3,10 @@
 ;; Copyright (C) 2013 Rikard Glans
 ;;
 ;; Author: Rikard Glans <rikard@ecx.se>
-;; Keywords: colortheme, theme
+;; Version: 0.1.0
+;; Keywords: colorthemes, themes
 ;;
-;; Time-stamp: <2013-05-06 23:48:28>
+;; Time-stamp: <2013-05-07 00:12:58>
 ;;
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -20,16 +21,8 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-;;; Commentary:
-;;
-;; Cycle though your installed color themes.
-;;
-
-;;; TODO:
-;; * Clearly visible text of current theme, like an overlay box or something
-;; * "Wrong number of arguments: #<subr sort>, 1"
-
 ;;; Code:
+
 (when (< emacs-major-version 24)
   (error "Theme Park mode only works with Emacs 24 or greater"))
 
@@ -134,3 +127,5 @@
   (tpm--initialize))
 
 (provide 'theme-park-mode)
+
+;;; theme-park-mode.el ends here
