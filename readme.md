@@ -27,7 +27,6 @@ Drop `theme-park-mode.el` in your Emacs `load-path` and `(require 'theme-park-mo
 
 ## TODOs / Maybes / Perhapses
 
-* At the moment previous theme is just that, the previous theme. Does not go backwards.
 * Marmalade/MELPA?
 * Clearly visible text of current theme, like an overlay box or something.
 * Setting for group of regularly used themes to cycle between?

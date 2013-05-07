@@ -4,7 +4,7 @@
 
 ;; Author: Rikard Glans <rikard@ecx.se>
 ;; URL: https://github.com/darrik/theme-park-mode
-;; Version: 0.1.0
+;; Version: 0.1.1
 ;; Keywords: colorthemes, themes
 ;; Created: 6th May 2013
 
@@ -33,14 +33,8 @@
   (error "Theme Park mode only works with Emacs 24 or greater"))
 
 ;; Variables
-(defvar tpm_next nil
-  "Next theme in queue.")
-
-(defvar tpm_prev nil
-  "Prev theme in queue.")
-
-(defvar tpm_rest nil
-  "Rest of themes to try.")
+(defvar tpm_themes nil
+  "Holds a list of themes")
 
 (defvar tpm-mode-map
   (let ((map (make-sparse-keymap)))
@@ -57,14 +51,10 @@
     map)
   "Keyboard commands for Theme Park mode.")
 
-(defvar tpm_ok 0)
-
-;; Internal functions
+;; Functions
 (defun tpm--initialize ()
   "Initialize variables."
-  (setq tpm_rest (cdr (custom-available-themes)))
-  (setq tpm_next (car (custom-available-themes)))
-  (setq tpm_prev tpm_next))
+  (setq tpm_themes (custom-available-themes)))
 
 (defun tpm--load-theme (thm)
   "Load theme."
@@ -74,34 +64,30 @@
     (load-theme thm)
     (message "Theme: %s" thm)))
 
+;; TODO: This mess could be prettier.
+(defun tpm--step (direction themes)
+  (let ((current (car custom-enabled-themes)))
+    (if (eq direction 'forward)
+        (let ((next (car themes)))
+          (setq tpm_themes (append (cdr themes) (list next)))
+          (if (eq current next)
+              (tpm--step direction tpm_themes)
+            (tpm--load-theme next)))
+      (let ((next (car (last themes))))
+        (setq tpm_themes (append (list next) (butlast themes)))
+        (if (eq current next)
+            (tpm--step direction tpm_themes)
+          (tpm--load-theme next))))))
+
 (defun tpm--next-theme ()
   "Next theme."
   (interactive)
-
-  (when (eq tpm_ok 1)
-    (setq tpm_prev (car custom-enabled-themes))
-    (setq tpm_next (car tpm_rest))
-    (setq tpm_rest (cdr tpm_rest))
-
-    (if (eq tpm_next nil)
-        (tpm--initialize))
-    (if (and (not (eq tpm_next nil))
-             (eq tpm_rest nil))
-        (setq tpm_rest (custom-available-themes)))
-    )
-
-  (tpm--load-theme tpm_next)
-
-  (setq tpm_ok 1))
+  (tpm--step 'forward tpm_themes))
 
 (defun tpm--prev-theme ()
   "Previous theme."
   (interactive)
-  (if (eq tpm_prev nil)
-      (tpm--reset)
-    (progn
-      (setq tpm_ok 0)
-      (tpm--load-theme tpm_prev))))
+  (tpm--step 'backward tpm_themes))
 
 (defun tpm--reset-theme ()
   "Disable all loaded themes, effectively resetting to default colors."
