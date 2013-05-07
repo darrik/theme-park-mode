@@ -1,8 +1,9 @@
-;;; theme-park-mode.el --- So much to see!
+;;; theme-park-mode.el --- Take your themes for a ride!
 
 ;; Copyright (C) 2013 Rikard Glans
 
 ;; Author: Rikard Glans <rikard@ecx.se>
+;; URL: https://github.com/darrik/theme-park-mode
 ;; Version: 0.1.0
 ;; Keywords: colorthemes, themes
 ;; Created: 6th May 2013
@@ -19,6 +20,11 @@
 ;;
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;; M-x theme-park-mode and take your themes for a ride.
+;; Right arrow to go forward, Left backward, Up to go again and Down to stop.
 
 ;;; Code:
 
