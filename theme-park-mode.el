@@ -4,7 +4,7 @@
 
 ;; Author: Rikard Glans <rikard@ecx.se>
 ;; URL: https://github.com/darrik/theme-park-mode
-;; Version: 0.1.1
+;; Version: 0.1.1a
 ;; Keywords: colorthemes, themes
 ;; Created: 6th May 2013
 
@@ -33,7 +33,7 @@
   (error "Theme Park mode only works with Emacs 24 or greater"))
 
 ;; Variables
-(defvar tpm_themes nil
+(defvar tpm-themes nil
   "Holds a list of themes")
 
 (defvar tpm-mode-map
@@ -54,7 +54,7 @@
 ;; Functions
 (defun tpm--initialize ()
   "Initialize variables."
-  (setq tpm_themes (custom-available-themes)))
+  (setq tpm-themes (custom-available-themes)))
 
 (defun tpm--load-theme (thm)
   "Load theme."
@@ -69,25 +69,25 @@
   (let ((current (car custom-enabled-themes)))
     (if (eq direction 'forward)
         (let ((next (car themes)))
-          (setq tpm_themes (append (cdr themes) (list next)))
+          (setq tpm-themes (append (cdr themes) (list next)))
           (if (eq current next)
-              (tpm--step direction tpm_themes)
+              (tpm--step direction tpm-themes)
             (tpm--load-theme next)))
       (let ((next (car (last themes))))
-        (setq tpm_themes (append (list next) (butlast themes)))
+        (setq tpm-themes (append (list next) (butlast themes)))
         (if (eq current next)
-            (tpm--step direction tpm_themes)
+            (tpm--step direction tpm-themes)
           (tpm--load-theme next))))))
 
 (defun tpm--next-theme ()
   "Next theme."
   (interactive)
-  (tpm--step 'forward tpm_themes))
+  (tpm--step 'forward tpm-themes))
 
 (defun tpm--prev-theme ()
   "Previous theme."
   (interactive)
-  (tpm--step 'backward tpm_themes))
+  (tpm--step 'backward tpm-themes))
 
 (defun tpm--reset-theme ()
   "Disable all loaded themes, effectively resetting to default colors."
@@ -130,3 +130,4 @@
 (provide 'theme-park-mode)
 
 ;;; theme-park-mode.el ends here
+
