@@ -13,7 +13,10 @@ a theme.
 
 ## Installation
 
-Drop `theme-park-mode.el` in your Emacs `load-path` and `(require 'theme-park-mode)`.
+Available on [marmalade](http://marmalade-repo.org/) and you can install it
+via `M-x package-install theme-park-mode` or manually by dropping
+`theme-park-mode.el` in your Emacs `load-path` and `(require
+'theme-park-mode)`.
 
 ## Usage
 
@@ -27,7 +30,6 @@ Drop `theme-park-mode.el` in your Emacs `load-path` and `(require 'theme-park-mo
 
 ## TODOs / Maybes / Perhapses
 
-* Marmalade/MELPA?
 * Clearly visible text of current theme, like an overlay box or something.
 * Setting for group of regularly used themes to cycle between?
 
