@@ -23,6 +23,7 @@ Drop `theme-park-mode.el` in your Emacs `load-path` and `(require 'theme-park-mo
     C-c C-p / left arrow  = previous theme
     C-c C-r / up arrow    = start over
     C-c C-q / down arrow  = quit
+    C-c C-c               = show name of current theme
 
 ## TODOs / Maybes / Perhapses
 
