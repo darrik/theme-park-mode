@@ -23,8 +23,9 @@
 
 ;;; Commentary:
 
-;; M-x theme-park-mode and take your themes for a ride.
-;; Right arrow to go forward, Left backward, Up to go again and Down to stop.
+;; M-x theme-park-mode to take your themes for a ride. Right arrow to go
+;; forward, Left backward, Up to go again and Down to stop. Designed to be
+;; deactivated once you're done deciding on a theme (C-c C-q or down arrow.)
 
 ;;; Code:
 
@@ -47,6 +48,7 @@
     (define-key map (kbd "C-c C-p") 'tpm--prev-theme)
     (define-key map (kbd "C-c C-r") 'tpm--start-over)
     (define-key map (kbd "C-c C-q") 'tpm--quit)
+    (define-key map (kbd "C-c C-c") 'tpm--current-theme)
 
     (define-key map (kbd "<right>") 'tpm--next-theme)
     (define-key map (kbd "<left>")  'tpm--prev-theme)
@@ -125,6 +127,11 @@
   (interactive)
   (tpm--reset)
   (message "Theme Park: Starting over."))
+
+(defun tpm--current-theme ()
+  "Show currently loaded theme."
+  (interactive)
+  (message "Current theme: %s" (car custom-enabled-themes)))
 
 ;;;###autoload
 (define-minor-mode theme-park-mode
