@@ -4,7 +4,7 @@
 
 ;; Author: Rikard Glans <rikard@ecx.se>
 ;; URL: https://github.com/darrik/theme-park-mode
-;; Version: 0.1.2
+;; Version: 0.1.3
 ;; Keywords: colorthemes, themes
 ;; Created: 6th May 2013
 
@@ -28,11 +28,21 @@
 ;; deactivated once you're done deciding on a theme (C-c C-q or down arrow.)
 
 ;;; Code:
-
 (when (< emacs-major-version 24)
   (error "Theme Park mode only works with Emacs 24 or greater"))
 
-;; Variables
+(require 'cl)
+
+;; Configuration variables
+(defvar tpm-tagged '()
+  "List of personal themes.")
+
+(defvar tpm-mode 'global
+  "Mode of operation.
+Global: cycle between all available themes.
+Local: cycle between tagged themes.")
+
+;; Internal variables
 (defvar tpm-themes nil
   "Holds a list of themes")
 
@@ -43,6 +53,10 @@
     (define-key map (kbd "C-c C-r") 'tpm--start-over)
     (define-key map (kbd "C-c C-q") 'tpm--quit)
     (define-key map (kbd "C-c C-c") 'tpm--current-theme)
+    (define-key map (kbd "C-c C-t") 'tpm--tag)
+    (define-key map (kbd "C-c C-s") 'tpm--show-tagged)
+    (define-key map (kbd "C-c C-g") 'tpm--toggle-mode)
+    (define-key map (kbd "C-c C-l") 'tpm--toggle-mode)
 
     (define-key map (kbd "<right>") 'tpm--next-theme)
     (define-key map (kbd "<left>")  'tpm--prev-theme)
@@ -118,6 +132,36 @@
   "Show currently loaded theme."
   (interactive)
   (message "Current theme: %s" (car custom-enabled-themes)))
+
+(defun tpm--tag ()
+  "Tag current theme for inclusion."
+  (interactive)
+  (let ((thm (car custom-enabled-themes)))
+    (if (eq thm nil)
+        (message "Theme Park: You need to view a theme first.")
+      (progn
+        (add-to-list 'tpm-tagged thm)
+        (message "Tagged \"%s\" for inclusion." thm)))))
+
+(defun tpm--show-tagged ()
+  "Display list of tagged themes."
+  (interactive)
+  (if (eq tpm-tagged nil)
+      (message "Theme Park: No themes tagged yet.")
+    (let ((lst nil)) ; for message
+      (dolist (thm tpm-tagged)
+        (if (eq lst nil)
+            (setq lst (format "%s" thm))
+          (setq lst (concat lst (format ", %s" thm)))))
+      (message "Tagged themes: %s" lst))))
+
+(defun tpm--toggle-mode ()
+  "Toggle between global / local mode."
+  (interactive)
+  (if (eq tpm-mode 'global)
+      (setq tpm-mode 'local)
+    (setq tpm-mode 'global))
+  (message "Theme Park: %s mode enabled." tpm-mode))
 
 ;;;###autoload
 (define-minor-mode theme-park-mode

@@ -27,6 +27,10 @@ via `M-x package-install theme-park-mode` or manually by dropping
     C-c C-r / up arrow    = start over
     C-c C-q / down arrow  = quit
     C-c C-c               = show name of current theme
+    C-c C-g               = toggle global / local mode
+    C-c C-l               = toggle global / local mode
+    C-c C-t               = tag theme for inclusion in local list
+    C-c C-s               = show tagged themes
 
 ## TODOs / Maybes / Perhapses
 
