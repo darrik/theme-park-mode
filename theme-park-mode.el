@@ -60,10 +60,11 @@ local: cycle between tagged themes.")
     (define-key map (kbd "C-c C-q") 'tpm--quit)
     (define-key map (kbd "C-c C-c") 'tpm--current-theme)
     (define-key map (kbd "C-c C-t") 'tpm--tag)
-    (define-key map (kbd "C-c C-d") 'tpm--show-tagged)
+    (define-key map (kbd "C-c C-v") 'tpm--show-tagged)
     (define-key map (kbd "C-c C-g") 'tpm--toggle-mode)
     (define-key map (kbd "C-c C-l") 'tpm--toggle-mode)
     (define-key map (kbd "C-c C-s") 'tpm--save-tagged)
+    (define-key map (kbd "C-c C-d") 'tpm--tag-pop)
 
     (define-key map (kbd "<right>") 'tpm--next-theme)
     (define-key map (kbd "<left>")  'tpm--prev-theme)
@@ -124,7 +125,7 @@ local: cycle between tagged themes.")
 (defun tpm--step-theme (direction)
   "Switch theme."
   (interactive)
-  (if (eq tpm-mode 'local)
+  (if (eq tpm-mode 'local)              ; TODO: move into toggle-mode
       (progn
         (if (> (length tpm-themes-private) 1)
             (tpm--step direction tpm-themes-private)
@@ -167,20 +168,31 @@ local: cycle between tagged themes.")
   (if (eq tpm-mode 'local)
       (message "Theme Park: No tagging in local mode.")
     (let ((thm (car custom-enabled-themes)))
-      (if (eq thm nil)
+      (if (not thm)
           (message "Theme Park: You need to view a theme first.")
         (progn
           (add-to-list 'tpm-tagged thm)
           (message "Tagged \"%s\" for inclusion." thm))))))
 
+(defun tpm--tag-pop ()
+  "Remove current theme from list of tagged themes."
+  (interactive)
+  (let ((current (car custom-enabled-themes)))
+    (if (not current)
+        (message "Theme Park: Nothing to do.")
+      (progn
+        (setq tpm-tagged (remove current tpm-tagged))
+        (setq tpm-themes-private (remove current tpm-themes-private))
+        (message "Removed \"%s\" from local list." current)))))
+
 (defun tpm--show-tagged ()
   "Display list of tagged themes."
   (interactive)
-  (if (eq tpm-tagged nil)
+  (if (not tpm-tagged)
       (message "Theme Park: No themes tagged yet.")
     (let ((lst nil)) ; for message
       (dolist (thm tpm-tagged)
-        (if (eq lst nil)
+        (if (not lst)
             (setq lst (format "%s" thm))
           (setq lst (concat lst (format ", %s" thm)))))
       (message "Tagged themes: %s" lst))))
@@ -196,6 +208,7 @@ local: cycle between tagged themes.")
 
 (defun tpm--save-tagged ()
   "Save tpm-tagged customization variable."
+  (interactive)
   (customize-save-variable 'tpm-tagged tpm-tagged)
   (message "%s" "Theme Park: Tagged themes saved!"))
 

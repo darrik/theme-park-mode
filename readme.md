@@ -15,8 +15,7 @@ a theme.
 
 Available on [marmalade](http://marmalade-repo.org/) and you can install it
 via `M-x package-install theme-park-mode` or manually by dropping
-`theme-park-mode.el` in your Emacs `load-path` and `(require
-'theme-park-mode)`.
+`theme-park-mode.el` in your Emacs `load-path` and `(require 'theme-park-mode)`.
 
 ## Usage
 
@@ -30,7 +29,8 @@ via `M-x package-install theme-park-mode` or manually by dropping
     C-c C-g               = toggle global / local mode
     C-c C-l               = toggle global / local mode
     C-c C-t               = tag theme for inclusion in local mode
-    C-c C-d               = show tagged themes
+    C-c C-d               = remove theme from local list
+    C-c C-v               = show tagged themes
     C-c C-s               = save tagged themes for future sessions
 
 ## Local mode
