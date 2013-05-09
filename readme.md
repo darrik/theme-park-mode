@@ -29,13 +29,23 @@ via `M-x package-install theme-park-mode` or manually by dropping
     C-c C-c               = show name of current theme
     C-c C-g               = toggle global / local mode
     C-c C-l               = toggle global / local mode
-    C-c C-t               = tag theme for inclusion in local list
-    C-c C-s               = show tagged themes
+    C-c C-t               = tag theme for inclusion in local mode
+    C-c C-d               = show tagged themes
+    C-c C-s               = save tagged themes for future sessions
 
-## TODOs / Maybes / Perhapses
+## Local mode
 
-* Clearly visible text of current theme, like an overlay box or something.
-* Setting for group of regularly used themes to cycle between?
+While browsing through themes with this minor mode you can "tag" themes for a
+smaller list of frequently used themes. Use `C-c C-t` when on a theme you like
+and it will be tagged. When you have two or more themes tagged you can go into
+"local mode" with `C-c C-l` and cycle between them. You can save the list for
+future sessions with `C-c C-s`.
+
+### Configuration
+
+You can use `M-x customize-group theme-park-mode` or set `tpm-tagged` in your
+init file (i.e: `(setq tpm-tagged '(zenesque-dark-colors underwaterd))`) if
+you want to change the list manually.
 
 ## Notes
 

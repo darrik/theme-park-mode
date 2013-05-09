@@ -34,17 +34,23 @@
 (require 'cl)
 
 ;; Configuration variables
-(defvar tpm-tagged '()
-  "List of personal themes.")
-
-(defvar tpm-mode 'global
-  "Mode of operation.
-Global: cycle between all available themes.
-Local: cycle between tagged themes.")
+(defcustom tpm-tagged nil
+  "List of personal themes."
+  :type 'sexp
+  :tag "List of private themes"
+  :group 'theme-park-mode)
 
 ;; Internal variables
+(defvar tpm-mode 'global
+  "Mode of operation.
+global: cycle between all available themes.
+local: cycle between tagged themes.")
+
 (defvar tpm-themes nil
   "Holds a list of themes")
+
+(defvar tpm-themes-private nil
+  "Holds a list of private themes")
 
 (defvar tpm-mode-map
   (let ((map (make-sparse-keymap)))
@@ -54,9 +60,10 @@ Local: cycle between tagged themes.")
     (define-key map (kbd "C-c C-q") 'tpm--quit)
     (define-key map (kbd "C-c C-c") 'tpm--current-theme)
     (define-key map (kbd "C-c C-t") 'tpm--tag)
-    (define-key map (kbd "C-c C-s") 'tpm--show-tagged)
+    (define-key map (kbd "C-c C-d") 'tpm--show-tagged)
     (define-key map (kbd "C-c C-g") 'tpm--toggle-mode)
     (define-key map (kbd "C-c C-l") 'tpm--toggle-mode)
+    (define-key map (kbd "C-c C-s") 'tpm--save-tagged)
 
     (define-key map (kbd "<right>") 'tpm--next-theme)
     (define-key map (kbd "<left>")  'tpm--prev-theme)
@@ -68,7 +75,8 @@ Local: cycle between tagged themes.")
 ;; Functions
 (defun tpm--initialize ()
   "Initialize variables."
-  (setq tpm-themes (custom-available-themes)))
+  (setq tpm-themes (custom-available-themes))
+  (setq tpm-themes-private tpm-tagged))
 
 (defun tpm--load-theme (thm)
   "Load theme."
@@ -80,28 +88,48 @@ Local: cycle between tagged themes.")
 
 ;; TODO: This mess could be prettier.
 (defun tpm--step (direction themes)
+  (defun --tpm--set (lst)
+    (if (eq tpm-mode 'global)
+        (setq tpm-themes lst)
+      (setq tpm-themes-private lst)))
+
+  (defun --tpm--restep (direction)
+    (if (eq tpm-mode 'global)
+        (tpm--step direction tpm-themes)
+      (tpm--step direction tpm-themes-private)))
+
   (let ((current (car custom-enabled-themes)))
     (if (eq direction 'forward)
         (let ((next (car themes)))
-          (setq tpm-themes (append (cdr themes) (list next)))
+          (--tpm--set (append (cdr themes) (list next)))
           (if (eq current next)
-              (tpm--step direction tpm-themes)
+              (--tpm--restep direction)
             (tpm--load-theme next)))
       (let ((next (car (last themes))))
-        (setq tpm-themes (append (list next) (butlast themes)))
+        (--tpm--set (append (list next) (butlast themes)))
         (if (eq current next)
-            (tpm--step direction tpm-themes)
+            (--tpm--restep direction)
           (tpm--load-theme next))))))
 
 (defun tpm--next-theme ()
   "Next theme."
   (interactive)
-  (tpm--step 'forward tpm-themes))
+  (tpm--step-theme 'forward))
 
 (defun tpm--prev-theme ()
   "Previous theme."
   (interactive)
-  (tpm--step 'backward tpm-themes))
+  (tpm--step-theme 'backward))
+
+(defun tpm--step-theme (direction)
+  "Switch theme."
+  (interactive)
+  (if (eq tpm-mode 'local)
+      (progn
+        (if (> (length tpm-themes-private) 1)
+            (tpm--step direction tpm-themes-private)
+          (message "Theme Park: You need to tag at least two themes.")))
+    (tpm--step direction tpm-themes)))
 
 (defun tpm--reset-theme ()
   "Disable all loaded themes, effectively resetting to default colors."
@@ -136,12 +164,14 @@ Local: cycle between tagged themes.")
 (defun tpm--tag ()
   "Tag current theme for inclusion."
   (interactive)
-  (let ((thm (car custom-enabled-themes)))
-    (if (eq thm nil)
-        (message "Theme Park: You need to view a theme first.")
-      (progn
-        (add-to-list 'tpm-tagged thm)
-        (message "Tagged \"%s\" for inclusion." thm)))))
+  (if (eq tpm-mode 'local)
+      (message "Theme Park: No tagging in local mode.")
+    (let ((thm (car custom-enabled-themes)))
+      (if (eq thm nil)
+          (message "Theme Park: You need to view a theme first.")
+        (progn
+          (add-to-list 'tpm-tagged thm)
+          (message "Tagged \"%s\" for inclusion." thm))))))
 
 (defun tpm--show-tagged ()
   "Display list of tagged themes."
@@ -161,7 +191,13 @@ Local: cycle between tagged themes.")
   (if (eq tpm-mode 'global)
       (setq tpm-mode 'local)
     (setq tpm-mode 'global))
+  (tpm--reset)
   (message "Theme Park: %s mode enabled." tpm-mode))
+
+(defun tpm--save-tagged ()
+  "Save tpm-tagged customization variable."
+  (customize-save-variable 'tpm-tagged tpm-tagged)
+  (message "%s" "Theme Park: Tagged themes saved!"))
 
 ;;;###autoload
 (define-minor-mode theme-park-mode
