@@ -4,7 +4,7 @@
 
 ;; Author: Rikard Glans <rikard@ecx.se>
 ;; URL: https://github.com/darrik/theme-park-mode
-;; Version: 0.1.3
+;; Version: 0.2.0
 ;; Keywords: colorthemes, themes
 ;; Created: 6th May 2013
 
