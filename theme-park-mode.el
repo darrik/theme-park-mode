@@ -40,6 +40,11 @@
   :tag "List of private themes"
   :group 'theme-park-mode)
 
+(defcustom tpm-auto-save t
+  "Auto save tagged themes."
+  :type 'boolean
+  :group 'theme-park-mode)
+
 ;; Internal variables
 (defvar tpm-mode 'global
   "Mode of operation.
@@ -89,28 +94,26 @@ local: cycle between tagged themes.")
 
 ;; TODO: This mess could be prettier.
 (defun tpm--step (direction themes)
-  (defun --tpm--set (lst)
-    (if (eq tpm-mode 'global)
-        (setq tpm-themes lst)
-      (setq tpm-themes-private lst)))
-
-  (defun --tpm--restep (direction)
-    (if (eq tpm-mode 'global)
-        (tpm--step direction tpm-themes)
-      (tpm--step direction tpm-themes-private)))
-
-  (let ((current (car custom-enabled-themes)))
-    (if (eq direction 'forward)
-        (let ((next (car themes)))
-          (--tpm--set (append (cdr themes) (list next)))
+  (flet ((--set (lst)
+                (if (eq tpm-mode 'global)
+                    (setq tpm-themes lst)
+                  (setq tpm-themes-private lst)))
+         (--re-step (direction)
+                    (if (eq tpm-mode 'global)
+                        (tpm--step direction tpm-themes)
+                      (tpm--step direction tpm-themes-private))))
+    (let ((current (car custom-enabled-themes)))
+      (if (eq direction 'forward)
+          (let ((next (car themes)))
+            (--set (append (cdr themes) (list next)))
+            (if (eq current next)
+                (--re-step direction)
+              (tpm--load-theme next)))
+        (let ((next (car (last themes))))
+          (--set (append (list next) (butlast themes)))
           (if (eq current next)
-              (--tpm--restep direction)
-            (tpm--load-theme next)))
-      (let ((next (car (last themes))))
-        (--tpm--set (append (list next) (butlast themes)))
-        (if (eq current next)
-            (--tpm--restep direction)
-          (tpm--load-theme next))))))
+              (--re-step direction)
+            (tpm--load-theme next)))))))
 
 (defun tpm--next-theme ()
   "Next theme."
@@ -125,11 +128,11 @@ local: cycle between tagged themes.")
 (defun tpm--step-theme (direction)
   "Switch theme."
   (interactive)
-  (if (eq tpm-mode 'local)              ; TODO: move into toggle-mode
+  (if (eq tpm-mode 'local)
       (progn
         (if (> (length tpm-themes-private) 1)
             (tpm--step direction tpm-themes-private)
-          (message "Theme Park: You need to tag at least two themes.")))
+          (message "Theme Park: You need to have at least two themes tagged.")))
     (tpm--step direction tpm-themes)))
 
 (defun tpm--reset-theme ()
@@ -148,6 +151,8 @@ local: cycle between tagged themes.")
 (defun tpm--quit ()
   "Leave Theme Park mode."
   (interactive)
+  (if (eq tpm-auto-save t)
+      (customize-save-variable 'tpm-tagged tpm-tagged))
   (theme-park-mode -1)
   (message "Theme Park: Bye bye!"))
 
@@ -171,7 +176,7 @@ local: cycle between tagged themes.")
       (if (not thm)
           (message "Theme Park: You need to view a theme first.")
         (progn
-          (add-to-list 'tpm-tagged thm)
+          (customize-set-variable 'tpm-tagged (add-to-list 'tpm-tagged thm))
           (message "Tagged \"%s\" for inclusion." thm))))))
 
 (defun tpm--tag-pop ()
@@ -181,7 +186,7 @@ local: cycle between tagged themes.")
     (if (not current)
         (message "Theme Park: Nothing to do.")
       (progn
-        (setq tpm-tagged (remove current tpm-tagged))
+        (customize-set-variable 'tpm-tagged (remove current tpm-tagged))
         (setq tpm-themes-private (remove current tpm-themes-private))
         (message "Removed \"%s\" from local list." current)))))
 
@@ -200,11 +205,18 @@ local: cycle between tagged themes.")
 (defun tpm--toggle-mode ()
   "Toggle between global / local mode."
   (interactive)
-  (if (eq tpm-mode 'global)
-      (setq tpm-mode 'local)
-    (setq tpm-mode 'global))
-  (tpm--reset)
-  (message "Theme Park: %s mode enabled." tpm-mode))
+  (flet ((--tpm-do-it ()
+                      (tpm--reset)
+                      (message "Theme Park: %s mode enabled." tpm-mode)))
+    (if (eq tpm-mode 'global)
+        (if (> (length tpm-tagged) 1)
+            (progn
+              (setq tpm-mode 'local)
+              (--tpm-do-it))
+          (message "Theme Park: You need to tag at least two themes."))
+      (progn
+        (setq tpm-mode 'global)
+        (--tpm-do-it)))))
 
 (defun tpm--save-tagged ()
   "Save tpm-tagged customization variable."
@@ -223,4 +235,3 @@ local: cycle between tagged themes.")
 (provide 'theme-park-mode)
 
 ;;; theme-park-mode.el ends here
-
