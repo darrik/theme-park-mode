@@ -43,13 +43,16 @@ future sessions with `C-c C-s`.
 
 ### Configuration
 
-You can use `M-x customize-group theme-park-mode` or set `tpm-tagged` in your
-init file (i.e: `(setq tpm-tagged '(zenesque-dark-colors underwaterd))`) if
+Easiest to use the keybinds but you can use `M-x customize-group
+theme-park-mode` or edit `tpm-tagged` in your init file (i.e:
+`(custom-set-variables '(tpm-tagged '(zenesque-dark-colors underwaterd)))`) if
 you want to change the list manually.
 
 ## Notes
 
 Requires Emacs v24+
+
+You may consider this repo beta and the version on Marmalade as stable.
 
 ### Psst, look here
 

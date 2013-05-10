@@ -132,7 +132,7 @@ local: cycle between tagged themes.")
       (progn
         (if (> (length tpm-themes-private) 1)
             (tpm--step direction tpm-themes-private)
-          (message "Theme Park: You need to have at least two themes tagged.")))
+          (message "%s" "Theme Park: You need to have at least two themes tagged.")))
     (tpm--step direction tpm-themes)))
 
 (defun tpm--reset-theme ()
@@ -154,13 +154,13 @@ local: cycle between tagged themes.")
   (if (eq tpm-auto-save t)
       (customize-save-variable 'tpm-tagged tpm-tagged))
   (theme-park-mode -1)
-  (message "Theme Park: Bye bye!"))
+  (message "%s" "Theme Park: Bye bye!"))
 
 (defun tpm--start-over ()
   "Start over."
   (interactive)
   (tpm--reset)
-  (message "Theme Park: Starting over."))
+  (message "%s" "Theme Park: Starting over."))
 
 (defun tpm--current-theme ()
   "Show currently loaded theme."
@@ -171,10 +171,10 @@ local: cycle between tagged themes.")
   "Tag current theme for inclusion."
   (interactive)
   (if (eq tpm-mode 'local)
-      (message "Theme Park: No tagging in local mode.")
+      (message "%s" "Theme Park: No tagging in local mode.")
     (let ((thm (car custom-enabled-themes)))
       (if (not thm)
-          (message "Theme Park: You need to view a theme first.")
+          (message "%s" "Theme Park: You need to view a theme first.")
         (progn
           (customize-set-variable 'tpm-tagged (add-to-list 'tpm-tagged thm))
           (message "Tagged \"%s\" for inclusion." thm))))))
@@ -184,7 +184,7 @@ local: cycle between tagged themes.")
   (interactive)
   (let ((current (car custom-enabled-themes)))
     (if (not current)
-        (message "Theme Park: Nothing to do.")
+        (message "%s" "Theme Park: Nothing to do.")
       (progn
         (customize-set-variable 'tpm-tagged (remove current tpm-tagged))
         (setq tpm-themes-private (remove current tpm-themes-private))
@@ -194,7 +194,7 @@ local: cycle between tagged themes.")
   "Display list of tagged themes."
   (interactive)
   (if (not tpm-tagged)
-      (message "Theme Park: No themes tagged yet.")
+      (message "%s" "Theme Park: No themes tagged yet.")
     (let ((lst nil)) ; for message
       (dolist (thm tpm-tagged)
         (if (not lst)
@@ -213,7 +213,7 @@ local: cycle between tagged themes.")
             (progn
               (setq tpm-mode 'local)
               (--tpm-do-it))
-          (message "Theme Park: You need to tag at least two themes."))
+          (message "%s" "Theme Park: You need to tag at least two themes."))
       (progn
         (setq tpm-mode 'global)
         (--tpm-do-it)))))
@@ -235,3 +235,4 @@ local: cycle between tagged themes.")
 (provide 'theme-park-mode)
 
 ;;; theme-park-mode.el ends here
+
