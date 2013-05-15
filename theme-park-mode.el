@@ -31,8 +31,6 @@
 (when (< emacs-major-version 24)
   (error "Theme Park mode only works with Emacs 24 or greater"))
 
-(require 'cl)
-
 ;; Configuration variables
 (defcustom tpm-tagged nil
   "List of personal themes."
@@ -113,26 +111,26 @@ local: cycle between tagged themes.")
 ;; TODO: This mess could be prettier.
 (defun tpm--step (direction themes)
   "Advance to next or previous theme."
-  (flet ((--set (lst)
-                (if (tpm--isglobal)
-                    (setq tpm-themes lst)
-                  (setq tpm-themes-private lst)))
-         (--re-step (direction)
-                    (if (tpm--isglobal)
-                        (tpm--step direction tpm-themes)
-                      (tpm--step direction tpm-themes-private))))
-    (let ((current (tpm--cthm)))
-      (if (eq direction 'forward)
-          (let ((next (car themes)))
-            (--set (append (cdr themes) (list next)))
-            (if (eq current next)
-                (--re-step direction)
-              (tpm--load-theme next)))
-        (let ((next (car (last themes))))
-          (--set (append (list next) (butlast themes)))
+  (let ((--set (lambda (lst)
+                 (if (tpm--isglobal)
+                     (setq tpm-themes lst)
+                   (setq tpm-themes-private lst))))
+        (--re-step (lambda (direction)
+                     (if (tpm--isglobal)
+                         (tpm--step direction tpm-themes)
+                       (tpm--step direction tpm-themes-private))))
+        (current (tpm--cthm)))
+    (if (eq direction 'forward)
+        (let ((next (car themes)))
+          (funcall --set (append (cdr themes) (list next)))
           (if (eq current next)
-              (--re-step direction)
-            (tpm--load-theme next)))))))
+              (funcall --re-step direction)
+            (tpm--load-theme next)))
+      (let ((next (car (last themes))))
+        (funcall --set (append (list next) (butlast themes)))
+        (if (eq current next)
+            (funcall --re-step direction)
+          (tpm--load-theme next))))))
 
 (defun tpm--next-theme ()
   "Next theme."
@@ -230,18 +228,18 @@ local: cycle between tagged themes.")
 (defun tpm--toggle-mode ()
   "Toggle between global / local mode."
   (interactive)
-  (flet ((--do-it ()
-                  (tpm--reset)
-                  (message "Theme Park: %s mode enabled." tpm-mode)))
+  (let ((--do-it (lambda ()
+                   (tpm--reset)
+                   (message "Theme Park: %s mode enabled." tpm-mode))))
     (if (tpm--isglobal)
         (if (> (length tpm-tagged) 1)
             (progn
               (setq tpm-mode 'local)
-              (--do-it))
+              (funcall --do-it))
           (message "%s" "Theme Park: You need to tag at least two themes."))
       (progn
         (setq tpm-mode 'global)
-        (--do-it)))))
+        (funcall --do-it)))))
 
 (defun tpm--save-tagged ()
   "Save tpm-tagged customization variable."
