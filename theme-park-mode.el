@@ -4,7 +4,7 @@
 
 ;; Author: Rikard Glans <rikard@ecx.se>
 ;; URL: https://github.com/darrik/theme-park-mode
-;; Version: 0.2.0
+;; Version: 0.2.1
 ;; Keywords: colorthemes, themes
 ;; Created: 6th May 2013
 
@@ -79,10 +79,19 @@ local: cycle between tagged themes.")
   "Keyboard commands for Theme Park mode.")
 
 ;; Functions
+(defun tpm--isglobal ()
+  "Return t if in global mode."
+  (eq tpm-mode 'global))
+
+(defun tpm--islocal ()
+  "Return t if in local mode."
+  (eq tpm-mode 'local))
+
 (defun tpm--initialize ()
   "Initialize variables."
   (setq tpm-themes (custom-available-themes))
-  (setq tpm-themes-private tpm-tagged))
+  (setq tpm-themes-private tpm-tagged)
+  (message "Theme Park Mode: Hi there! (%s mode.)" tpm-mode))
 
 (defun tpm--load-theme (thm)
   "Load theme."
@@ -92,17 +101,27 @@ local: cycle between tagged themes.")
     (load-theme thm)
     (message "Theme: %s" thm)))
 
+(defun tpm--cthm ()
+  "Returns currently active theme."
+  (car custom-enabled-themes))
+
+(defun tpm--current-theme ()
+  "Show currently loaded theme."
+  (interactive)
+  (message "Current theme: %s" (tpm--cthm)))
+
 ;; TODO: This mess could be prettier.
 (defun tpm--step (direction themes)
+  "Advance to next or previous theme."
   (flet ((--set (lst)
-                (if (eq tpm-mode 'global)
+                (if (tpm--isglobal)
                     (setq tpm-themes lst)
                   (setq tpm-themes-private lst)))
          (--re-step (direction)
-                    (if (eq tpm-mode 'global)
+                    (if (tpm--isglobal)
                         (tpm--step direction tpm-themes)
                       (tpm--step direction tpm-themes-private))))
-    (let ((current (car custom-enabled-themes)))
+    (let ((current (tpm--cthm)))
       (if (eq direction 'forward)
           (let ((next (car themes)))
             (--set (append (cdr themes) (list next)))
@@ -128,7 +147,7 @@ local: cycle between tagged themes.")
 (defun tpm--step-theme (direction)
   "Switch theme."
   (interactive)
-  (if (eq tpm-mode 'local)
+  (if (tpm--islocal)
       (progn
         (if (> (length tpm-themes-private) 1)
             (tpm--step direction tpm-themes-private)
@@ -162,27 +181,30 @@ local: cycle between tagged themes.")
   (tpm--reset)
   (message "%s" "Theme Park: Starting over."))
 
-(defun tpm--current-theme ()
-  "Show currently loaded theme."
-  (interactive)
-  (message "Current theme: %s" (car custom-enabled-themes)))
+(defun tpm--tag-add (thm)
+  "Add theme to tagged list."
+  (customize-set-variable 'tpm-tagged (add-to-list 'tpm-tagged thm))
+  (message "Tagged \"%s\" for inclusion." thm))
 
 (defun tpm--tag ()
   "Tag current theme for inclusion."
   (interactive)
-  (if (eq tpm-mode 'local)
-      (message "%s" "Theme Park: No tagging in local mode.")
-    (let ((thm (car custom-enabled-themes)))
+  (let ((thm (tpm--cthm)))
+    (if (tpm--islocal)
+        (if (not thm)
+            (message "%s" "Theme Park: Nothing to do.")
+          (if (assoc thm tpm-tagged)
+              (when (y-or-n-p (format "Do you want to remove %s from local list?" thm))
+                (tpm--tag-pop))
+            (tpm--tag-add thm)))
       (if (not thm)
           (message "%s" "Theme Park: You need to view a theme first.")
-        (progn
-          (customize-set-variable 'tpm-tagged (add-to-list 'tpm-tagged thm))
-          (message "Tagged \"%s\" for inclusion." thm))))))
+        (tpm--tag-add thm)))))
 
 (defun tpm--tag-pop ()
   "Remove current theme from list of tagged themes."
   (interactive)
-  (let ((current (car custom-enabled-themes)))
+  (let ((current (tpm--cthm)))
     (if (not current)
         (message "%s" "Theme Park: Nothing to do.")
       (progn
@@ -195,28 +217,31 @@ local: cycle between tagged themes.")
   (interactive)
   (if (not tpm-tagged)
       (message "%s" "Theme Park: No themes tagged yet.")
-    (let ((lst nil)) ; for message
-      (dolist (thm tpm-tagged)
-        (if (not lst)
-            (setq lst (format "%s" thm))
-          (setq lst (concat lst (format ", %s" thm)))))
+    (let ((lst nil)
+          (thms tpm-tagged))
+      (while thms
+        (let ((thm (car thms)))
+          (if (not lst)
+              (setq lst (format "%s" thm))
+            (setq lst (concat lst (format ", %s" thm)))))
+        (setq thms (cdr thms)))
       (message "Tagged themes: %s" lst))))
 
 (defun tpm--toggle-mode ()
   "Toggle between global / local mode."
   (interactive)
-  (flet ((--tpm-do-it ()
-                      (tpm--reset)
-                      (message "Theme Park: %s mode enabled." tpm-mode)))
-    (if (eq tpm-mode 'global)
+  (flet ((--do-it ()
+                  (tpm--reset)
+                  (message "Theme Park: %s mode enabled." tpm-mode)))
+    (if (tpm--isglobal)
         (if (> (length tpm-tagged) 1)
             (progn
               (setq tpm-mode 'local)
-              (--tpm-do-it))
+              (--do-it))
           (message "%s" "Theme Park: You need to tag at least two themes."))
       (progn
         (setq tpm-mode 'global)
-        (--tpm-do-it)))))
+        (--do-it)))))
 
 (defun tpm--save-tagged ()
   "Save tpm-tagged customization variable."
