@@ -55,6 +55,9 @@ local: cycle between tagged themes.")
 (defvar tpm-themes-private nil
   "Holds a list of private themes")
 
+(defvar tpm-themes-force nil
+  "If not nil, force loading theme without asking (unsafe)")
+
 (defvar tpm-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-n") 'tpm--next-theme)
@@ -96,7 +99,7 @@ local: cycle between tagged themes.")
   (tpm--reset-theme)
   (when (not (eq thm nil))
     ;; (load-theme thm t) ; This is unsafe if you have unvetted themes installed.
-    (load-theme thm)
+    (load-theme thm tpm-themes-force)
     (message "Theme: %s" thm)))
 
 (defun tpm--cthm ()
@@ -258,4 +261,3 @@ local: cycle between tagged themes.")
 (provide 'theme-park-mode)
 
 ;;; theme-park-mode.el ends here
-
